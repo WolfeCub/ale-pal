@@ -1,0 +1,10 @@
+[package]
+name = "ale-pal"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0"
+actix-web = "4"
+serde = { version = "1.0.214", features = ["derive"] }
+sqlx = { version = "0.8.2", features = ["runtime-tokio", "tls-rustls", "sqlite"] }
