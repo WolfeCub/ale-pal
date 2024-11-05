@@ -46,10 +46,17 @@ impl Db {
     pub async fn insert_beverage(
         &self,
         name: &str,
-        kind_id: i32,
-        producer_id: i32,
+        kind_id: i64,
+        producer_id: i64,
     ) -> anyhow::Result<i64> {
         let record = sqlx::query!("INSERT INTO beverage (name, kind_id, producer_id) VALUES (?,?,?) RETURNING beverage_id", name, kind_id, producer_id).fetch_one(&self.pool).await?;
         Ok(record.beverage_id)
+    }
+
+    pub async fn get_all_beverages(&self) -> anyhow::Result<Vec<JoinBeverage>> {
+        let record = sqlx::query_as!(JoinBeverage, "SELECT beverage.name as name, kind.name as kind, producer.name as producer FROM beverage INNER JOIN kind ON kind.kind_id = beverage.kind_id INNER JOIN producer ON producer.producer_id = beverage.producer_id;")
+            .fetch_all(&self.pool)
+            .await?;
+        Ok(record)
     }
 }
