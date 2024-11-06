@@ -10,19 +10,22 @@ use types::InsertBeverage;
 use util::*;
 
 use actix_web::{
-    get, post,
-    web::{self, Json, JsonConfig},
-    App, HttpResponse, HttpServer, Responder,
+    delete, get, post, web::{self, Json, JsonConfig}, App, HttpResponse, HttpServer, Responder
 };
+
+#[derive(Deserialize)]
+struct NameRequest {
+    name: String
+}
 
 #[get("/producer")]
 async fn get_all_producers(db: web::Data<Db>) -> impl Responder {
     db.get_all_producers().await.to_response()
 }
 
-#[post("/producer/{name}")]
-async fn post_producer(path: web::Path<String>, db: web::Data<Db>) -> HttpResponse {
-    let name = path.into_inner();
+#[post("/producer")]
+async fn post_producer(req_body: Json<NameRequest>, db: web::Data<Db>) -> HttpResponse {
+    let name = &req_body.name;
     if name.is_empty() {
         return HttpResponse::BadRequest().body("Empty Name");
     }
@@ -34,10 +37,9 @@ async fn get_all_kinds(db: web::Data<Db>) -> impl Responder {
     db.get_all_kinds().await.to_response()
 }
 
-#[post("/kind/{name}")]
-async fn post_kind(path: web::Path<String>, db: web::Data<Db>) -> impl Responder {
-    let name = path.into_inner();
-    db.insert_kind(&name).await.to_response()
+#[post("/kind")]
+async fn post_kind(req_body: Json<NameRequest>, db: web::Data<Db>) -> impl Responder {
+    db.insert_kind(&req_body.name).await.to_response()
 }
 
 #[get("/beverage")]
@@ -48,6 +50,11 @@ async fn get_beverage(db: web::Data<Db>) -> impl Responder {
 #[post("/beverage")]
 async fn post_beverage(body: Json<InsertBeverage>, db: web::Data<Db>) -> impl Responder {
     db.insert_beverage(&body.name, body.kind_id, body.producer_id).await.to_response()
+}
+
+#[delete("/beverage/{id}")]
+async fn delete_beverage(path: web::Path<i64>, db: web::Data<Db>) -> impl Responder {
+    db.delete_beverage(path.into_inner()).await.to_response()
 }
 
 #[actix_web::main]

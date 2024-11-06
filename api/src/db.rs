@@ -59,4 +59,9 @@ impl Db {
             .await?;
         Ok(record)
     }
+
+    pub async fn delete_beverage(&self, beverage_id: i64) -> anyhow::Result<()> {
+        sqlx::query!("DELETE FROM beverage WHERE beverage_id = ?", beverage_id).execute(&self.pool).await?;
+        Ok(())
+    }
 }
