@@ -1,5 +1,10 @@
 <script lang="ts">
-    import { getKinds, getProducers, addBeverage } from "./api/client";
+    import {
+        useKindsQuery,
+        useProducersQuery,
+        addBeverage,
+        useBeverageMutation,
+    } from "./api/client";
 
     interface Props {
         close: () => void;
@@ -13,22 +18,28 @@
     let rating = $state(10);
     let description = $state("");
 
+    const range = (start: number, end: number, length = end - start + 1) =>
+        Array.from({ length }, (_, i) => start + i);
+
+    const onChange = (value: number) => {
+        rating = value;
+    };
+
+    const kindsQuery = useKindsQuery();
+    const producersQuery = useProducersQuery();
+    const beverageMutation = useBeverageMutation();
+
     const submit = () => {
-        addBeverage({
+        $beverageMutation.mutate({
             name: name,
             producer_id: producer,
             kind_id: kind,
             rating: rating,
             description: description,
         });
+
+        props.close();
     };
-
-    const range = (start: number, end: number, length = end - start + 1) => Array.from({ length }, (_, i) => start + i);
-
-    const onChange = (value: number) => {
-        rating = value;
-    };
-
 </script>
 
 <div id="modal" class="modal modal-open">
@@ -52,23 +63,23 @@
             class="select select-bordered w-full max-w-xs"
             bind:value={kind}
         >
-            {#await getKinds() then kinds}
-                {#each kinds ?? [] as kind}
+            {#if $kindsQuery.isSuccess}
+                {#each $kindsQuery.data ?? [] as kind}
                     <option value={kind.kind_id}>{kind.name}</option>
                 {/each}
-            {/await}
+            {/if}
         </select>
 
         <select
             class="select select-bordered w-full max-w-xs"
             bind:value={producer}
         >
-            {#await getProducers() then producers}
-                {#each producers ?? [] as producer}
+            {#if $producersQuery.isSuccess}
+                {#each $producersQuery.data ?? [] as producer}
                     <option value={producer.producer_id}>{producer.name}</option
                     >
                 {/each}
-            {/await}
+            {/if}
         </select>
 
         <textarea
@@ -78,7 +89,12 @@
         ></textarea>
 
         <div class="rating rating-lg rating-half">
-            <input type="radio" name="rating-10" class="rating-hidden" onchange={() => onChange(0)}/>
+            <input
+                type="radio"
+                name="rating-10"
+                class="rating-hidden"
+                onchange={() => onChange(0)}
+            />
             {#each range(0, 9) as num}
                 <input
                     type="radio"

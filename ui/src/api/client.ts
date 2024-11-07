@@ -1,9 +1,18 @@
+import { createMutation, createQuery, QueryClient } from '@tanstack/svelte-query';
 import axios from 'axios';
 
 const client = axios.create({
     baseURL: 'http://localhost:8080',
     headers: {
         'Content-Type': 'application/json',
+    },
+});
+
+export const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            staleTime: Infinity,
+        },
     },
 });
 
@@ -33,23 +42,25 @@ interface InsertBeverage {
     description: string;
 }
 
-export async function getKinds(): Promise<Kind[] | null> {
-    return await client.get<Kind[]>('/kind')
-        .then(r => r.data)
-        .catch(e => { console.error(e); return null; });
-}
+export const useKindsQuery = () => createQuery<Kind[]>({
+    queryKey: ['kinds'],
+    queryFn: () => client.get<Kind[]>('/kind').then(o => o.data),
+});
 
-export async function getProducers(): Promise<Producer[] | null> {
-    return await client.get<Producer[]>('/producer')
-        .then(r => r.data)
-        .catch(e => { console.error(e); return null; });
-}
+export const useProducersQuery = () => createQuery<Producer[]>({
+    queryKey: ['producers'],
+    queryFn: () => client.get<Producer[]>('/producer').then(o => o.data),
+});
 
-export async function getBeverages(): Promise<Beverage[] | null> {
-    return await client.get<Beverage[]>('/beverage')
-        .then(r => r.data)
-        .catch(e => { console.error(e); return null; });
-}
+export const useBeveragesQuery = () => createQuery<Beverage[]>({
+    queryKey: ['beverage'],
+    queryFn: () => client.get<Beverage[]>('/beverage').then(o => o.data),
+});
+
+export const useBeverageMutation = () => createMutation({
+    mutationFn: (beverage: InsertBeverage) => client.post(`/beverage`, beverage),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['beverage'] }), // TODO: Set the data rather than refetching
+});
 
 export async function addKind(name: string): Promise<void> {
     await client.post(`/kind/${name}`)
@@ -59,8 +70,4 @@ export async function addKind(name: string): Promise<void> {
 export async function addProducer(name: string): Promise<void> {
     await client.post(`/producer/${name}`)
         .catch(e => { console.error(e); return null; });
-}
-
-export async function addBeverage(beverage: InsertBeverage): Promise<void> {
-    await client.post(`/beverage`, beverage).catch(e => { console.error(e); return null; });
 }

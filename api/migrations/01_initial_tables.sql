@@ -13,7 +13,7 @@ CREATE TABLE beverage (
     name        TEXT NOT NULL,
     kind_id     INTEGER NOT NULL,
     producer_id INTEGER NOT NULL,
-    rating      INTEGER NOT NULL,
+    rating      REAL NOT NULL,
     description TEXT NOT NULL,
     FOREIGN KEY (kind_id) REFERENCES kind (kind_id),
     FOREIGN KEY (producer_id) REFERENCES producer (producer_id)

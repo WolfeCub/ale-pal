@@ -27,7 +27,7 @@ pub struct JoinBeverage {
     pub name: String,
     pub producer: String,
     pub kind: String,
-    pub rating: i64,
+    pub rating: f64,
     pub description: String
 }
 
