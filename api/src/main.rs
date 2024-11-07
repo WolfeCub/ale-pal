@@ -10,12 +10,14 @@ use types::InsertBeverage;
 use util::*;
 
 use actix_web::{
-    delete, get, post, web::{self, Json, JsonConfig}, App, HttpResponse, HttpServer, Responder
+    delete, get, post,
+    web::{self, Json, JsonConfig},
+    App, HttpResponse, HttpServer, Responder,
 };
 
 #[derive(Deserialize)]
 struct NameRequest {
-    name: String
+    name: String,
 }
 
 #[get("/producer")]
@@ -49,7 +51,7 @@ async fn get_beverage(db: web::Data<Db>) -> impl Responder {
 
 #[post("/beverage")]
 async fn post_beverage(body: Json<InsertBeverage>, db: web::Data<Db>) -> impl Responder {
-    db.insert_beverage(&body.name, body.kind_id, body.producer_id).await.to_response()
+    db.insert_beverage(body.into_inner()).await.to_response()
 }
 
 #[delete("/beverage/{id}")]

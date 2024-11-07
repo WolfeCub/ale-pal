@@ -2,6 +2,9 @@ import axios from 'axios';
 
 const client = axios.create({
     baseURL: 'http://localhost:8080',
+    headers: {
+        'Content-Type': 'application/json',
+    },
 });
 
 interface Kind {
@@ -18,6 +21,16 @@ interface Beverage {
     name: string;
     producer: string;
     kind: string;
+    rating: number;
+    description: string;
+}
+
+interface InsertBeverage {
+    name: string;
+    producer_id: string;
+    kind_id: string;
+    rating: number;
+    description: string;
 }
 
 export async function getKinds(): Promise<Kind[] | null> {
@@ -48,8 +61,6 @@ export async function addProducer(name: string): Promise<void> {
         .catch(e => { console.error(e); return null; });
 }
 
-export async function addBeverage(name: string, kind_id: string, producer_id: string): Promise<void> {
-    let blah = { name, kind_id: kind_id, producer_id: producer_id };
-    console.log(blah);
-    await client.post(`/beverage`, blah).catch(e => { console.error(e); return null; });
+export async function addBeverage(beverage: InsertBeverage): Promise<void> {
+    await client.post(`/beverage`, beverage).catch(e => { console.error(e); return null; });
 }

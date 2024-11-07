@@ -12,11 +12,11 @@
 </script>
 
 <main>
-    <div class="container mx-auto">
+    <div class="container mx-auto flex flex-col items-center">
         <List />
 
         <!-- TODO: Maybe not fixed but inside the container -->
-        <div class="fixed bottom-10 right-10">
+        <div class="fixed bottom-5 right-5">
             <button
                 class="btn btn-info btn-circle font-bold text-xl"
                 onclick={openModal}>+</button
@@ -25,6 +25,6 @@
     </div>
 
     {#if shown}
-        <Modal close={() => shown = false}/>
+        <Modal close={() => (shown = false)} />
     {/if}
 </main>

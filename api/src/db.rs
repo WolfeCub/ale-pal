@@ -43,25 +43,22 @@ impl Db {
         Ok(record.producer_id)
     }
 
-    pub async fn insert_beverage(
-        &self,
-        name: &str,
-        kind_id: i64,
-        producer_id: i64,
-    ) -> anyhow::Result<i64> {
-        let record = sqlx::query!("INSERT INTO beverage (name, kind_id, producer_id) VALUES (?,?,?) RETURNING beverage_id", name, kind_id, producer_id).fetch_one(&self.pool).await?;
+    pub async fn insert_beverage(&self, beverage: InsertBeverage) -> anyhow::Result<i64> {
+        let record = sqlx::query!("INSERT INTO beverage (name, kind_id, producer_id, rating, description) VALUES (?,?,?,?,?) RETURNING beverage_id", beverage.name, beverage.kind_id, beverage.producer_id, beverage.rating, beverage.description).fetch_one(&self.pool).await?;
         Ok(record.beverage_id)
     }
 
     pub async fn get_all_beverages(&self) -> anyhow::Result<Vec<JoinBeverage>> {
-        let record = sqlx::query_as!(JoinBeverage, "SELECT beverage.name as name, kind.name as kind, producer.name as producer FROM beverage INNER JOIN kind ON kind.kind_id = beverage.kind_id INNER JOIN producer ON producer.producer_id = beverage.producer_id;")
+        let record = sqlx::query_as!(JoinBeverage, "SELECT beverage.name as name, kind.name as kind, producer.name as producer, beverage.rating as rating, beverage.description as description FROM beverage INNER JOIN kind ON kind.kind_id = beverage.kind_id INNER JOIN producer ON producer.producer_id = beverage.producer_id;")
             .fetch_all(&self.pool)
             .await?;
         Ok(record)
     }
 
     pub async fn delete_beverage(&self, beverage_id: i64) -> anyhow::Result<()> {
-        sqlx::query!("DELETE FROM beverage WHERE beverage_id = ?", beverage_id).execute(&self.pool).await?;
+        sqlx::query!("DELETE FROM beverage WHERE beverage_id = ?", beverage_id)
+            .execute(&self.pool)
+            .await?;
         Ok(())
     }
 }
