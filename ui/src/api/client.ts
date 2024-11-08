@@ -1,5 +1,4 @@
 import { createMutation, createQuery, QueryClient } from '@tanstack/svelte-query';
-import axios from 'axios';
 
 import { createClient, FetchTransport } from "@rspc/client";
 import type { InsertBeverage, Procedures } from "./rspc";
