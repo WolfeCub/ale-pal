@@ -13,10 +13,14 @@ impl Db {
     }
 
     pub async fn get_all_kinds(&self) -> anyhow::Result<Vec<Kind>> {
-        let record = sqlx::query_as!(Kind, "SELECT * FROM kind")
+        let record = sqlx::query!("SELECT * FROM kind")
             .fetch_all(&self.pool)
             .await?;
-        Ok(record)
+
+        Ok(record.into_iter().map(|r| Kind {
+            kind_id: r.kind_id as i32,
+            name: r.name,
+        }).collect())
     }
 
     pub async fn insert_kind(&self, name: &str) -> anyhow::Result<i64> {
@@ -27,10 +31,14 @@ impl Db {
     }
 
     pub async fn get_all_producers(&self) -> anyhow::Result<Vec<Producer>> {
-        let record = sqlx::query_as!(Producer, "SELECT * FROM producer")
+        let record = sqlx::query!("SELECT * FROM producer")
             .fetch_all(&self.pool)
             .await?;
-        Ok(record)
+
+        Ok(record.into_iter().map(|r| Producer {
+            producer_id: r.producer_id as i32,
+            name: r.name,
+        }).collect())
     }
 
     pub async fn insert_producer(&self, name: &str) -> anyhow::Result<i64> {

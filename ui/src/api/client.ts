@@ -1,11 +1,11 @@
 import { createMutation, createQuery, QueryClient } from '@tanstack/svelte-query';
 import axios from 'axios';
 
-const client = axios.create({
-    baseURL: 'http://localhost:8080',
-    headers: {
-        'Content-Type': 'application/json',
-    },
+import { createClient, FetchTransport } from "@rspc/client";
+import type { InsertBeverage, Procedures } from "./rspc";
+
+const client = createClient<Procedures>({
+  transport: new FetchTransport("http://localhost:8080/rspc"),
 });
 
 export const queryClient = new QueryClient({
@@ -34,40 +34,36 @@ interface Beverage {
     description: string;
 }
 
-interface InsertBeverage {
-    name: string;
-    producer_id: string;
-    kind_id: string;
-    rating: number;
-    description: string;
-}
+// interface InsertBeverage {
+//     name: string;
+//     producer_id: string;
+//     kind_id: string;
+//     rating: number;
+//     description: string;
+// }
+
+// export const useKindsQuery = () => createQuery<Kind[]>({
+//     queryKey: ['kinds'],
+//     queryFn: () => client.get<Kind[]>('/kind').then(o => o.data),
+// });
 
 export const useKindsQuery = () => createQuery<Kind[]>({
     queryKey: ['kinds'],
-    queryFn: () => client.get<Kind[]>('/kind').then(o => o.data),
+    queryFn: () => client.query(['kind']),
 });
 
 export const useProducersQuery = () => createQuery<Producer[]>({
     queryKey: ['producers'],
-    queryFn: () => client.get<Producer[]>('/producer').then(o => o.data),
+    queryFn: () => client.query(['producer']),
 });
 
 export const useBeveragesQuery = () => createQuery<Beverage[]>({
     queryKey: ['beverage'],
-    queryFn: () => client.get<Beverage[]>('/beverage').then(o => o.data),
+    queryFn: () => client.query(['beverage']),
 });
 
 export const useBeverageMutation = () => createMutation({
-    mutationFn: (beverage: InsertBeverage) => client.post(`/beverage`, beverage),
+    mutationFn: (beverage: InsertBeverage) => client.mutation(['beverage', beverage]),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['beverage'] }), // TODO: Set the data rather than refetching
 });
 
-export async function addKind(name: string): Promise<void> {
-    await client.post(`/kind/${name}`)
-        .catch(e => { console.error(e); return null; });
-}
-
-export async function addProducer(name: string): Promise<void> {
-    await client.post(`/producer/${name}`)
-        .catch(e => { console.error(e); return null; });
-}

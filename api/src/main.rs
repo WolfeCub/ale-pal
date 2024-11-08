@@ -2,65 +2,83 @@ mod db;
 mod types;
 mod util;
 
-use actix_cors::Cors;
 use db::*;
+use rspc::ErrorCode;
 use serde::Deserialize;
+use specta::Type;
 use sqlx::{sqlite::SqliteConnectOptions, SqlitePool};
+use tower_http::cors::CorsLayer;
 use types::InsertBeverage;
 use util::*;
 
-use actix_web::{
-    delete, get, post,
-    web::{self, Json, JsonConfig},
-    App, HttpResponse, HttpServer, Responder,
-};
-
-#[derive(Deserialize)]
+#[derive(Deserialize, Type)]
 struct NameRequest {
     name: String,
 }
 
-#[get("/producer")]
-async fn get_all_producers(db: web::Data<Db>) -> impl Responder {
-    db.get_all_producers().await.to_response()
+async fn get_all_kinds(ctx: Context, input: ()) -> Result<Vec<types::Kind>, rspc::Error> {
+    ctx.db.get_all_kinds().await.anyhow_rspc()
 }
 
-#[post("/producer")]
-async fn post_producer(req_body: Json<NameRequest>, db: web::Data<Db>) -> HttpResponse {
-    let name = &req_body.name;
-    if name.is_empty() {
-        return HttpResponse::BadRequest().body("Empty Name");
+async fn get_all_producers(ctx: Context, input: ()) -> Result<Vec<types::Producer>, rspc::Error> {
+    ctx.db.get_all_producers().await.anyhow_rspc()
+}
+
+async fn get_all_beverages(
+    ctx: Context,
+    input: (),
+) -> Result<Vec<types::JoinBeverage>, rspc::Error> {
+    ctx.db.get_all_beverages().await.anyhow_rspc()
+}
+
+async fn add_kind(ctx: Context, input: NameRequest) -> Result<(), rspc::Error> {
+    ctx.db.insert_kind(&input.name).await.anyhow_rspc()?;
+    Ok(())
+}
+
+async fn add_producer(ctx: Context, input: NameRequest) -> Result<(), rspc::Error> {
+    if input.name.is_empty() {
+        return Err(rspc::Error::new(
+            ErrorCode::BadRequest,
+            "Name is empty".to_owned(),
+        ));
     }
-    db.insert_producer(&name).await.to_response()
+    ctx.db.insert_producer(&input.name).await.anyhow_rspc()?;
+    Ok(())
 }
 
-#[get("/kind")]
-async fn get_all_kinds(db: web::Data<Db>) -> impl Responder {
-    db.get_all_kinds().await.to_response()
+async fn add_beverage(ctx: Context, input: InsertBeverage) -> Result<(), rspc::Error> {
+    ctx.db.insert_beverage(input).await.anyhow_rspc()?;
+    Ok(())
 }
 
-#[post("/kind")]
-async fn post_kind(req_body: Json<NameRequest>, db: web::Data<Db>) -> impl Responder {
-    db.insert_kind(&req_body.name).await.to_response()
+struct Context {
+    db: Db,
 }
 
-#[get("/beverage")]
-async fn get_beverage(db: web::Data<Db>) -> impl Responder {
-    db.get_all_beverages().await.to_response()
+fn router() -> rspc::Router<Context> {
+    <rspc::Router<Context>>::new()
+        .query("kind", |t| t(|ctx, input: ()| get_all_kinds(ctx, input)))
+        .query("producer", |t| {
+            t(|ctx, input: ()| get_all_producers(ctx, input))
+        })
+        .query("beverage", |t| {
+            t(|ctx, input: ()| get_all_beverages(ctx, input))
+        })
+        .mutation("kind", |t| {
+            t(|ctx, input: NameRequest| add_kind(ctx, input))
+        })
+        .mutation("producer", |t| {
+            t(|ctx, input: NameRequest| add_producer(ctx, input))
+        })
+        .mutation("beverage", |t| {
+            t(|ctx, input: InsertBeverage| add_beverage(ctx, input))
+        })
+        .build()
 }
 
-#[post("/beverage")]
-async fn post_beverage(body: Json<InsertBeverage>, db: web::Data<Db>) -> impl Responder {
-    db.insert_beverage(body.into_inner()).await.to_response()
-}
-
-#[delete("/beverage/{id}")]
-async fn delete_beverage(path: web::Path<i64>, db: web::Data<Db>) -> impl Responder {
-    db.delete_beverage(path.into_inner()).await.to_response()
-}
-
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
+#[tokio::main]
+async fn main() {
     let pool = SqlitePool::connect_with(
         SqliteConnectOptions::new()
             .filename("alepal.db")
@@ -69,20 +87,23 @@ async fn main() -> std::io::Result<()> {
     .await
     .expect("Unable to open database");
 
+    let router = router().arced();
+    router
+        .export_ts("../ui/src/api/rspc.ts")
+        .expect("Unable to export typescript bindings");
+
     let db = Db::new(pool);
 
-    HttpServer::new(move || {
-        App::new()
-            .wrap(Cors::permissive())
-            .app_data(web::Data::new(db.clone()))
-            .service(get_all_kinds)
-            .service(get_all_producers)
-            .service(post_kind)
-            .service(post_producer)
-            .service(get_beverage)
-            .service(post_beverage)
-    })
-    .bind(("127.0.0.1", 8080))?
-    .run()
-    .await
+    let app = axum::Router::new()
+        .with_state(db.clone())
+        .nest("/rspc", rspc_axum::endpoint(router, || Context { db: db }))
+        .layer(
+            CorsLayer::new()
+                .allow_origin(tower_http::cors::Any)
+                .allow_headers(tower_http::cors::Any)
+                .allow_methods(tower_http::cors::Any),
+        );
+
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }

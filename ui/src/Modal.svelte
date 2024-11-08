@@ -2,7 +2,6 @@
     import {
         useKindsQuery,
         useProducersQuery,
-        addBeverage,
         useBeverageMutation,
     } from "./api/client";
 
