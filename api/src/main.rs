@@ -61,10 +61,10 @@ struct Context {
 
 fn router() -> rspc::Router<Context> {
     <rspc::Router<Context>>::new()
-        .query("kind", |t| t(get_all_kinds))
-        .query("producer", |t| t(get_all_producers))
-        .query("beverage", |t| t(get_all_beverages))
-        .mutation("kind", |t| t(add_kind))
+        .query("kind",        |t| t(get_all_kinds))
+        .query("producer",    |t| t(get_all_producers))
+        .query("beverage",    |t| t(get_all_beverages))
+        .mutation("kind",     |t| t(add_kind))
         .mutation("producer", |t| t(add_producer))
         .mutation("beverage", |t| t(add_beverage))
         .build()

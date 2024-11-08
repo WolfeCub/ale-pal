@@ -17,13 +17,6 @@
     let rating = $state(10);
     let description = $state("");
 
-    const range = (start: number, end: number, length = end - start + 1) =>
-        Array.from({ length }, (_, i) => start + i);
-
-    const onChange = (value: number) => {
-        rating = value;
-    };
-
     const kindsQuery = useKindsQuery();
     const producersQuery = useProducersQuery();
     const beverageMutation = useBeverageMutation();
@@ -31,8 +24,8 @@
     const submit = () => {
         $beverageMutation.mutate({
             name: name,
-            producer_id: producer,
-            kind_id: kind,
+            producer_id: Number(producer),
+            kind_id: Number(kind),
             rating: rating,
             description: description,
         });
@@ -62,6 +55,7 @@
             class="select select-bordered w-full max-w-xs"
             bind:value={kind}
         >
+            <option value="" disabled selected>Type</option>
             {#if $kindsQuery.isSuccess}
                 {#each $kindsQuery.data ?? [] as kind}
                     <option value={kind.kind_id}>{kind.name}</option>
@@ -73,6 +67,7 @@
             class="select select-bordered w-full max-w-xs"
             bind:value={producer}
         >
+            <option value="" disabled selected>Brewery</option>
             {#if $producersQuery.isSuccess}
                 {#each $producersQuery.data ?? [] as producer}
                     <option value={producer.producer_id}>{producer.name}</option
@@ -87,28 +82,12 @@
             bind:value={description}
         ></textarea>
 
-        <div class="rating rating-lg rating-half">
-            <input
-                type="radio"
-                name="rating-10"
-                class="rating-hidden"
-                onchange={() => onChange(0)}
-            />
-            {#each range(0, 9) as num}
-                <input
-                    type="radio"
-                    name="rating-10"
-                    class="mask mask-star-2 mask-half-1 bg-green-500"
-                    onchange={() => onChange(num + 0.5)}
-                />
-                <input
-                    type="radio"
-                    name="rating-10"
-                    class="mask mask-star-2 mask-half-2 bg-green-500"
-                    onchange={() => onChange(num + 1)}
-                />
-            {/each}
-        </div>
+        <input
+            type="number"
+            placeholder="Rating"
+            class="input input-bordered w-full max-w-xs"
+            bind:value={rating}
+        />
 
         <button class="btn" onclick={submit}>Button</button>
     </div>
