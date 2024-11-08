@@ -3,7 +3,10 @@ mod types;
 mod util;
 
 use db::*;
-use rspc::ErrorCode;
+use rspc::{
+    internal::{BuiltProcedureBuilder, UnbuiltProcedureBuilder},
+    ErrorCode,
+};
 use serde::Deserialize;
 use specta::Type;
 use sqlx::{sqlite::SqliteConnectOptions, SqlitePool};
@@ -58,22 +61,12 @@ struct Context {
 
 fn router() -> rspc::Router<Context> {
     <rspc::Router<Context>>::new()
-        .query("kind", |t| t(|ctx, input: ()| get_all_kinds(ctx, input)))
-        .query("producer", |t| {
-            t(|ctx, input: ()| get_all_producers(ctx, input))
-        })
-        .query("beverage", |t| {
-            t(|ctx, input: ()| get_all_beverages(ctx, input))
-        })
-        .mutation("kind", |t| {
-            t(|ctx, input: NameRequest| add_kind(ctx, input))
-        })
-        .mutation("producer", |t| {
-            t(|ctx, input: NameRequest| add_producer(ctx, input))
-        })
-        .mutation("beverage", |t| {
-            t(|ctx, input: InsertBeverage| add_beverage(ctx, input))
-        })
+        .query("kind", |t| t(get_all_kinds))
+        .query("producer", |t| t(get_all_producers))
+        .query("beverage", |t| t(get_all_beverages))
+        .mutation("kind", |t| t(add_kind))
+        .mutation("producer", |t| t(add_producer))
+        .mutation("beverage", |t| t(add_beverage))
         .build()
 }
 
