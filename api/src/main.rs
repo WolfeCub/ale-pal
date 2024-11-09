@@ -2,6 +2,8 @@ mod db;
 mod types;
 mod util;
 
+use std::sync::Arc;
+
 use db::*;
 use rspc::{
     internal::{BuiltProcedureBuilder, UnbuiltProcedureBuilder},
@@ -19,17 +21,17 @@ struct NameRequest {
     name: String,
 }
 
-async fn get_all_kinds(ctx: Context, input: ()) -> Result<Vec<types::Kind>, rspc::Error> {
+async fn get_all_kinds(ctx: Context, _input: ()) -> Result<Vec<types::Kind>, rspc::Error> {
     ctx.db.get_all_kinds().await.anyhow_rspc()
 }
 
-async fn get_all_producers(ctx: Context, input: ()) -> Result<Vec<types::Producer>, rspc::Error> {
+async fn get_all_producers(ctx: Context, _input: ()) -> Result<Vec<types::Producer>, rspc::Error> {
     ctx.db.get_all_producers().await.anyhow_rspc()
 }
 
 async fn get_all_beverages(
     ctx: Context,
-    input: (),
+    _input: (),
 ) -> Result<Vec<types::JoinBeverage>, rspc::Error> {
     ctx.db.get_all_beverages().await.anyhow_rspc()
 }
@@ -80,7 +82,7 @@ async fn main() {
     .await
     .expect("Unable to open database");
 
-    let router = router().arced();
+    let router = Arc::new(router());
     router
         .export_ts("../ui/src/api/rspc.ts")
         .expect("Unable to export typescript bindings");
@@ -89,7 +91,7 @@ async fn main() {
 
     let app = axum::Router::new()
         .with_state(db.clone())
-        .nest("/rspc", rspc_axum::endpoint(router, || Context { db: db }))
+        .nest("/rspc", rspc_axum::endpoint(router, || Context { db, }))
         .layer(
             CorsLayer::new()
                 .allow_origin(tower_http::cors::Any)

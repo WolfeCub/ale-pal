@@ -15,6 +15,7 @@ CREATE TABLE beverage (
     producer_id INTEGER NOT NULL,
     rating      REAL NOT NULL,
     description TEXT NOT NULL,
+    image       BLOB,
     FOREIGN KEY (kind_id) REFERENCES kind (kind_id),
     FOREIGN KEY (producer_id) REFERENCES producer (producer_id)
 );

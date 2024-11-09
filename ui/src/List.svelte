@@ -7,6 +7,12 @@
 {#if $beveragesQuery.isSuccess}
     {#each $beveragesQuery.data ?? [] as b}
         <div class="card bg-base-100 w-96 shadow-xl mb-3">
+            <figure>
+                <img
+                    src={URL.createObjectURL(new Blob([new Uint8Array(b.image!)]))}
+                    alt=""
+                />
+            </figure>
             <div class="card-body">
                 <div>
                     <h2 class="card-title">

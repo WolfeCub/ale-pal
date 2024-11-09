@@ -14,10 +14,10 @@ export type Procedures = {
 
 export type Kind = { kind_id: number; name: string }
 
-export type InsertBeverage = { name: string; producer_id: number; kind_id: number; rating: number; description: string }
+export type InsertBeverage = { name: string; producer_id: number; kind_id: number; rating: number; description: string; image: number[] | null }
 
 export type Producer = { producer_id: number; name: string }
 
-export type NameRequest = { name: string }
+export type JoinBeverage = { name: string; producer: string; kind: string; rating: number; description: string; image: number[] | null }
 
-export type JoinBeverage = { name: string; producer: string; kind: string; rating: number; description: string }
+export type NameRequest = { name: string }

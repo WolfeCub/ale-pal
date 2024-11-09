@@ -16,18 +16,25 @@
     let name = $state("");
     let rating = $state(10);
     let description = $state("");
+    let image: FileList | undefined = $state();
 
     const kindsQuery = useKindsQuery();
     const producersQuery = useProducersQuery();
     const beverageMutation = useBeverageMutation();
 
-    const submit = () => {
+    const submit = async () => {
+        const arrayBuffer = await image?.item(0)?.arrayBuffer();
+        const byteArray = arrayBuffer
+            ? Array.from(new Uint8Array(arrayBuffer))
+            : null;
+
         $beverageMutation.mutate({
             name: name,
             producer_id: Number(producer),
             kind_id: Number(kind),
             rating: rating,
             description: description,
+            image: byteArray,
         });
 
         props.close();
@@ -118,6 +125,12 @@
                     required
                 />
             </div>
+
+            <input
+                accept="image/png, image/jpeg"
+                bind:files={image}
+                type="file"
+            />
 
             <div class="modal-action">
                 <button type="submit" class="btn btn-primary">Save</button>
