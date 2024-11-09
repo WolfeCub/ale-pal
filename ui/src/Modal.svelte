@@ -43,52 +43,85 @@
             >
         </form>
 
-        <h3 class="text-lg font-bold">Add Beverage</h3>
-        <input
-            type="text"
-            placeholder="Beverage Name"
-            bind:value={name}
-            class="input input-bordered w-full max-w-xs"
-        />
+        <h2 class="text-2xl font-bold mb-4">Add a New Beer</h2>
 
-        <select
-            class="select select-bordered w-full max-w-xs"
-            bind:value={kind}
-        >
-            <option value="" disabled selected>Type</option>
-            {#if $kindsQuery.isSuccess}
-                {#each $kindsQuery.data ?? [] as kind}
-                    <option value={kind.kind_id}>{kind.name}</option>
-                {/each}
-            {/if}
-        </select>
+        <form onsubmit={submit} class="space-y-4">
+            <div>
+                <label for="name" class="label-text">Beer Name</label>
+                <input
+                    type="text"
+                    id="name"
+                    bind:value={name}
+                    class="input input-bordered w-full"
+                    placeholder="Enter beer name"
+                    required
+                />
+            </div>
 
-        <select
-            class="select select-bordered w-full max-w-xs"
-            bind:value={producer}
-        >
-            <option value="" disabled selected>Brewery</option>
-            {#if $producersQuery.isSuccess}
-                {#each $producersQuery.data ?? [] as producer}
-                    <option value={producer.producer_id}>{producer.name}</option
-                    >
-                {/each}
-            {/if}
-        </select>
+            <div>
+                <label for="beerType" class="label-text">Beer Type</label>
+                <select
+                    class="select select-bordered w-full"
+                    bind:value={kind}
+                    required
+                >
+                    <option value="" disabled selected>Select a type</option>
+                    {#if $kindsQuery.isSuccess}
+                        {#each $kindsQuery.data ?? [] as kind}
+                            <option value={kind.kind_id}>{kind.name}</option>
+                        {/each}
+                    {/if}
+                </select>
+            </div>
 
-        <textarea
-            class="textarea textarea-bordered"
-            placeholder="Description"
-            bind:value={description}
-        ></textarea>
+            <div>
+                <label for="brewery" class="label-text">Brewery</label>
+                <select
+                    class="select select-bordered w-full"
+                    bind:value={producer}
+                    required
+                >
+                    <option value="" disabled selected>Select a brewery</option>
+                    {#if $producersQuery.isSuccess}
+                        {#each $producersQuery.data ?? [] as producer}
+                            <option value={producer.producer_id}
+                                >{producer.name}</option
+                            >
+                        {/each}
+                    {/if}
+                </select>
+            </div>
 
-        <input
-            type="number"
-            placeholder="Rating"
-            class="input input-bordered w-full max-w-xs"
-            bind:value={rating}
-        />
+            <div>
+                <label for="description" class="label-text">Description</label>
+                <textarea
+                    id="description"
+                    bind:value={description}
+                    class="textarea textarea-bordered w-full"
+                    placeholder="Write a description"
+                    rows="3"
+                    required
+                ></textarea>
+            </div>
 
-        <button class="btn" onclick={submit}>Button</button>
+            <div>
+                <label for="rating" class="label-text">Rating (Out of 10)</label
+                >
+                <input
+                    type="number"
+                    id="rating"
+                    bind:value={rating}
+                    class="input input-bordered w-full"
+                    min="0"
+                    max="10"
+                    step="0.5"
+                    required
+                />
+            </div>
+
+            <div class="modal-action">
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
     </div>
 </div>
