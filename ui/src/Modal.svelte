@@ -1,8 +1,9 @@
 <script lang="ts">
     import {
-        useKindsQuery,
-        useProducersQuery,
-        useBeverageMutation,
+        deleteBeverageMutation,
+        getKindsQuery,
+        getProducersQuery,
+        upsertBeverageMutation,
     } from "./api/client";
     import type { UpdateBeverageRequest } from "./api/rspc";
     import { firstFileToByteArray } from "./utils";
@@ -22,14 +23,15 @@
 
     let image: number[] | null = $state(props.existing?.beverage.image ?? null);
 
-    const kindsQuery = useKindsQuery();
-    const producersQuery = useProducersQuery();
-    const beverageMutation = useBeverageMutation();
+    const kindsQuery = getKindsQuery();
+    const producersQuery = getProducersQuery();
+    const beverageMutation = upsertBeverageMutation();
+    const deleteMutation = deleteBeverageMutation();
 
     const onImageChange = async (list: FileList | null) => {
         const byteArray = await firstFileToByteArray(list);
         image = byteArray;
-    }
+    };
 
     const submit = () => {
         $beverageMutation.mutate({
@@ -135,12 +137,21 @@
 
             <input
                 accept="image/png, image/jpeg"
-                onchange={(e) => { onImageChange(e.currentTarget.files) }}
+                onchange={(e) => {
+                    onImageChange(e.currentTarget.files);
+                }}
                 type="file"
                 value="Test"
             />
 
-            <div class="modal-action">
+            <div class="modal-action flex justify-between w-full">
+                <button
+                    class="btn btn-error"
+                    onclick={() => {
+                        props.existing?.beverage_id &&
+                            $deleteMutation.mutate(props.existing.beverage_id);
+                    }}>Delete</button
+                >
                 <button type="submit" class="btn btn-primary">Save</button>
             </div>
         </form>

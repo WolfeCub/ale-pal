@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { useBeveragesQuery } from "./api/client";
+    import { getBeveragesQuery } from "./api/client";
     import type { UpdateBeverageRequest } from "./api/rspc";
     import { byteArrayToBlob } from "./utils";
 
@@ -9,7 +9,7 @@
 
     let props: Props = $props();
 
-    const beveragesQuery = useBeveragesQuery();
+    const beveragesQuery = getBeveragesQuery();
 </script>
 
 {#if $beveragesQuery.isSuccess}

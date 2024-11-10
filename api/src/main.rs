@@ -67,6 +67,11 @@ async fn upsert_beverage(ctx: Context, input: UpdateBeverageRequest) -> Result<(
     Ok(())
 }
 
+async fn delete_beverage(ctx: Context, input: i32) -> Result<(), rspc::Error> {
+    ctx.db.delete_beverage(input as i64).await.anyhow_rspc()?;
+    Ok(())
+}
+
 struct Context {
     db: Db,
 }
@@ -79,6 +84,7 @@ fn router() -> rspc::Router<Context> {
         .mutation("kind",     |t| t(add_kind))
         .mutation("producer", |t| t(add_producer))
         .mutation("beverage", |t| t(upsert_beverage))
+        .mutation("deleteBeverage", |t| t(delete_beverage))
         .build()
 }
 

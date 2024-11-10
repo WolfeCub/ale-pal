@@ -7,6 +7,7 @@ export type Procedures = {
         { key: "producer", input: never, result: Producer[] },
     mutations: 
         { key: "beverage", input: UpdateBeverageRequest, result: null } | 
+        { key: "deleteBeverage", input: number, result: null } | 
         { key: "kind", input: NameRequest, result: null } | 
         { key: "producer", input: NameRequest, result: null },
     subscriptions: never

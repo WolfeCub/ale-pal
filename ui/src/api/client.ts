@@ -16,23 +16,28 @@ export const queryClient = new QueryClient({
 });
 
 
-export const useKindsQuery = () => createQuery<Kind[]>({
+export const getKindsQuery = () => createQuery<Kind[]>({
     queryKey: ['kinds'],
     queryFn: () => client.query(['kind']),
 });
 
-export const useProducersQuery = () => createQuery<Producer[]>({
+export const getProducersQuery = () => createQuery<Producer[]>({
     queryKey: ['producers'],
     queryFn: () => client.query(['producer']),
 });
 
-export const useBeveragesQuery = () => createQuery<JoinBeverage[]>({
+export const getBeveragesQuery = () => createQuery<JoinBeverage[]>({
     queryKey: ['beverage'],
     queryFn: () => client.query(['beverage']),
 });
 
-export const useBeverageMutation = () => createMutation({
+export const upsertBeverageMutation = () => createMutation({
     mutationFn: (updateRequest: UpdateBeverageRequest) => client.mutation(['beverage', updateRequest]),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['beverage'] }), // TODO: Set the data rather than refetching
+});
+
+export const deleteBeverageMutation = () => createMutation({
+    mutationFn: (beverageId: number) => client.mutation(['deleteBeverage', beverageId]),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['beverage'] }), // TODO: Set the data rather than refetching
 });
 
