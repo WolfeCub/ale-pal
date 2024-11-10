@@ -1,8 +1,11 @@
 <script lang="ts">
+    import { preventDefault } from "svelte/legacy";
     import {
         deleteBeverageMutation,
         getKindsQuery,
         getProducersQuery,
+        insertKindMutation,
+        insertProducerMutation,
         upsertBeverageMutation,
     } from "./api/client";
     import type { UpdateBeverageRequest } from "./api/rspc";
@@ -21,12 +24,19 @@
     let rating = $state(props.existing?.beverage.rating ?? 10);
     let description = $state(props.existing?.beverage.description ?? "");
 
+    let newKind = $state("");
+    let showNewKind = $state(false);
+    let newProducer = $state("");
+    let showNewProducer = $state(false);
+
     let image: number[] | null = $state(props.existing?.beverage.image ?? null);
 
     const kindsQuery = getKindsQuery();
     const producersQuery = getProducersQuery();
     const beverageMutation = upsertBeverageMutation();
     const deleteMutation = deleteBeverageMutation();
+    const kindMutation = insertKindMutation();
+    const producerMutation = insertProducerMutation();
 
     const onImageChange = async (list: FileList | null) => {
         const byteArray = await firstFileToByteArray(list);
@@ -47,6 +57,28 @@
         });
 
         props.close();
+    };
+
+    const newKindEvent = (e: MouseEvent) => {
+        e.preventDefault();
+
+        if (showNewKind && newKind != '') {
+            $kindMutation.mutate({ name: newKind });
+        }
+
+        showNewKind = !showNewKind;
+        newKind = '';
+    };
+
+    const newProducerEvent = (e: MouseEvent) => {
+        e.preventDefault();
+
+        if (showNewProducer && newProducer != '') {
+            $producerMutation.mutate({ name: newProducer });
+        }
+
+        showNewProducer = !showNewProducer;
+        newProducer = '';
     };
 </script>
 
@@ -75,37 +107,81 @@
             </div>
 
             <div>
-                <label for="beerType" class="label-text">Beer Type</label>
-                <select
-                    class="select select-bordered w-full"
-                    bind:value={kind}
-                    required
+                <label for="beerType" class="label-text"
+                    >{showNewKind ? "Add New Type" : "Beer Type"}</label
                 >
-                    <option value="" disabled selected>Select a type</option>
-                    {#if $kindsQuery.isSuccess}
-                        {#each $kindsQuery.data ?? [] as kind}
-                            <option value={kind.kind_id}>{kind.name}</option>
-                        {/each}
+                <div class="flex">
+                    {#if !showNewKind}
+                        <select
+                            class="select select-bordered w-full"
+                            bind:value={kind}
+                            required
+                        >
+                            <option value="" disabled selected
+                                >Select a type</option
+                            >
+                            {#if $kindsQuery.isSuccess}
+                                {#each $kindsQuery.data ?? [] as kind}
+                                    <option value={kind.kind_id}
+                                        >{kind.name}</option
+                                    >
+                                {/each}
+                            {/if}
+                        </select>
+                    {:else}
+                        <input
+                            type="text"
+                            bind:value={newKind}
+                            class="input input-bordered w-full"
+                            placeholder="Enter type name"
+                            required
+                        />
                     {/if}
-                </select>
+                    <button
+                        class="btn"
+                        onclick={newKindEvent}
+                    >
+                        {showNewKind ? (newKind != '' ? "Add" : "Select") : "Edit"}
+                    </button>
+                </div>
             </div>
 
             <div>
                 <label for="brewery" class="label-text">Brewery</label>
-                <select
-                    class="select select-bordered w-full"
-                    bind:value={producer}
-                    required
-                >
-                    <option value="" disabled selected>Select a brewery</option>
-                    {#if $producersQuery.isSuccess}
-                        {#each $producersQuery.data ?? [] as producer}
-                            <option value={producer.producer_id}
-                                >{producer.name}</option
+                <div class="flex">
+                    {#if !showNewProducer}
+                        <select
+                            class="select select-bordered w-full"
+                            bind:value={producer}
+                            required
+                        >
+                            <option value="" disabled selected
+                                >Select a brewery</option
                             >
-                        {/each}
+                            {#if $producersQuery.isSuccess}
+                                {#each $producersQuery.data ?? [] as producer}
+                                    <option value={producer.producer_id}
+                                        >{producer.name}</option
+                                    >
+                                {/each}
+                            {/if}
+                        </select>
+                    {:else}
+                        <input
+                            type="text"
+                            bind:value={newProducer}
+                            class="input input-bordered w-full"
+                            placeholder="Enter brewery name"
+                            required
+                        />
                     {/if}
-                </select>
+                    <button
+                        class="btn"
+                        onclick={newProducerEvent}
+                    >
+                        {showNewProducer ? (newProducer != '' ? "Add" : "Select") : "Edit"}
+                    </button>
+                </div>
             </div>
 
             <div>

@@ -1,10 +1,12 @@
 import { createMutation, createQuery, QueryClient } from '@tanstack/svelte-query';
 
 import { createClient, FetchTransport } from "@rspc/client";
-import type { InsertBeverage, JoinBeverage, Kind, Procedures, Producer, UpdateBeverageRequest } from "./rspc";
+import type { InsertBeverage, JoinBeverage, Kind, NameRequest, Procedures, Producer, UpdateBeverageRequest } from "./rspc";
+
+const url = import.meta.env.MODE == 'production' ? '/rspc' : 'http://localhost:8080/rspc';
 
 const client = createClient<Procedures>({
-    transport: new FetchTransport("http://localhost:8080/rspc"),
+    transport: new FetchTransport(url),
 });
 
 export const queryClient = new QueryClient({
@@ -41,3 +43,12 @@ export const deleteBeverageMutation = () => createMutation({
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['beverage'] }), // TODO: Set the data rather than refetching
 });
 
+export const insertKindMutation = () => createMutation({
+    mutationFn: (insertKind: NameRequest) => client.mutation(['kind', insertKind]),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['kinds'] }), // TODO: Set the data rather than refetching
+});
+
+export const insertProducerMutation = () => createMutation({
+    mutationFn: (insertProducer: NameRequest) => client.mutation(['producer', insertProducer]),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['producers'] }), // TODO: Set the data rather than refetching
+});

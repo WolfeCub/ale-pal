@@ -5,6 +5,7 @@
 
     import List from "./List.svelte";
     import Modal from "./Modal.svelte";
+    import Navbar from "./Navbar.svelte";
     import { QueryClientProvider } from "@tanstack/svelte-query";
 
     let shown = $state(false);
@@ -28,6 +29,7 @@
 <QueryClientProvider client={queryClient}>
     <main>
         <div class="container mx-auto flex flex-col items-center">
+            <Navbar />
             <List openModal={edit} />
 
             <!-- TODO: Maybe not fixed but inside the container -->

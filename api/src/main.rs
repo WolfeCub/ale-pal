@@ -5,14 +5,11 @@ mod util;
 use std::sync::Arc;
 
 use db::*;
-use rspc::{
-    internal::{BuiltProcedureBuilder, UnbuiltProcedureBuilder},
-    ErrorCode,
-};
+use rspc::ErrorCode;
 use serde::Deserialize;
 use specta::Type;
 use sqlx::{sqlite::SqliteConnectOptions, SqlitePool};
-use tower_http::cors::CorsLayer;
+use tower_http::{cors::CorsLayer, services::ServeDir};
 use types::InsertBeverage;
 use util::*;
 
@@ -60,7 +57,10 @@ struct UpdateBeverageRequest {
 
 async fn upsert_beverage(ctx: Context, input: UpdateBeverageRequest) -> Result<(), rspc::Error> {
     if let Some(beverage_id) = input.beverage_id {
-        ctx.db.update_beverage(beverage_id, input.beverage).await.anyhow_rspc()?;
+        ctx.db
+            .update_beverage(beverage_id, input.beverage)
+            .await
+            .anyhow_rspc()?;
     } else {
         ctx.db.insert_beverage(input.beverage).await.anyhow_rspc()?;
     }
@@ -78,10 +78,10 @@ struct Context {
 
 fn router() -> rspc::Router<Context> {
     <rspc::Router<Context>>::new()
-        .query("kind",        |t| t(get_all_kinds))
-        .query("producer",    |t| t(get_all_producers))
-        .query("beverage",    |t| t(get_all_beverages))
-        .mutation("kind",     |t| t(add_kind))
+        .query("kind", |t| t(get_all_kinds))
+        .query("producer", |t| t(get_all_producers))
+        .query("beverage", |t| t(get_all_beverages))
+        .mutation("kind", |t| t(add_kind))
         .mutation("producer", |t| t(add_producer))
         .mutation("beverage", |t| t(upsert_beverage))
         .mutation("deleteBeverage", |t| t(delete_beverage))
@@ -90,6 +90,14 @@ fn router() -> rspc::Router<Context> {
 
 #[tokio::main]
 async fn main() {
+    let (log_level, dist_dir) = if cfg!(debug_assertions) {
+        (tracing::Level::DEBUG, "../ui/dist/")
+    } else {
+        (tracing::Level::INFO, "./dist")
+    };
+
+    tracing_subscriber::fmt().with_max_level(log_level).init();
+
     let pool = SqlitePool::connect_with(
         SqliteConnectOptions::new()
             .filename("alepal.db")
@@ -107,7 +115,9 @@ async fn main() {
 
     let app = axum::Router::new()
         .with_state(db.clone())
-        .nest("/rspc", rspc_axum::endpoint(router, || Context { db, }))
+        .nest_service("/", ServeDir::new(dist_dir))
+        .nest("/rspc", rspc_axum::endpoint(router, || Context { db }))
+        .layer(tower_http::trace::TraceLayer::new_for_http())
         .layer(
             CorsLayer::new()
                 .allow_origin(tower_http::cors::Any)
@@ -115,6 +125,8 @@ async fn main() {
                 .allow_methods(tower_http::cors::Any),
         );
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
+    let addr = "0.0.0.0:8080";
+    println!("Listening on {addr}");
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
