@@ -52,8 +52,18 @@ async fn add_producer(ctx: Context, input: NameRequest) -> Result<(), rspc::Erro
     Ok(())
 }
 
-async fn add_beverage(ctx: Context, input: InsertBeverage) -> Result<(), rspc::Error> {
-    ctx.db.insert_beverage(input).await.anyhow_rspc()?;
+#[derive(Deserialize, Type)]
+struct UpdateBeverageRequest {
+    beverage_id: Option<i32>,
+    beverage: InsertBeverage,
+}
+
+async fn upsert_beverage(ctx: Context, input: UpdateBeverageRequest) -> Result<(), rspc::Error> {
+    if let Some(beverage_id) = input.beverage_id {
+        ctx.db.update_beverage(beverage_id, input.beverage).await.anyhow_rspc()?;
+    } else {
+        ctx.db.insert_beverage(input.beverage).await.anyhow_rspc()?;
+    }
     Ok(())
 }
 
@@ -68,7 +78,7 @@ fn router() -> rspc::Router<Context> {
         .query("beverage",    |t| t(get_all_beverages))
         .mutation("kind",     |t| t(add_kind))
         .mutation("producer", |t| t(add_producer))
-        .mutation("beverage", |t| t(add_beverage))
+        .mutation("beverage", |t| t(upsert_beverage))
         .build()
 }
 

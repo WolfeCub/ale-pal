@@ -1,15 +1,25 @@
 <script lang="ts">
     import { useBeveragesQuery } from "./api/client";
+    import type { UpdateBeverageRequest } from "./api/rspc";
+    import { byteArrayToBlob } from "./utils";
+
+    interface Props {
+        openModal: (e: UpdateBeverageRequest | null) => void;
+    }
+
+    let props: Props = $props();
 
     const beveragesQuery = useBeveragesQuery();
 </script>
 
 {#if $beveragesQuery.isSuccess}
     {#each $beveragesQuery.data ?? [] as b}
-        <div class="card bg-base-100 w-96 shadow-xl mb-3">
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <div class="card bg-base-100 w-96 shadow-xl mb-3" onclick={() => props.openModal({ beverage_id: b.beverage_id, beverage: b })}>
             <figure>
                 <img
-                    src={URL.createObjectURL(new Blob([new Uint8Array(b.image!)]))}
+                    src={URL.createObjectURL(byteArrayToBlob(b.image!))}
                     alt=""
                 />
             </figure>

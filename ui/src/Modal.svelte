@@ -4,37 +4,44 @@
         useProducersQuery,
         useBeverageMutation,
     } from "./api/client";
+    import type { UpdateBeverageRequest } from "./api/rspc";
+    import { firstFileToByteArray } from "./utils";
 
     interface Props {
         close: () => void;
+        existing: UpdateBeverageRequest | null;
     }
 
     let props: Props = $props();
 
-    let kind = $state("");
-    let producer = $state("");
-    let name = $state("");
-    let rating = $state(10);
-    let description = $state("");
-    let image: FileList | undefined = $state();
+    let kind = $state(props.existing?.beverage.kind_id ?? "");
+    let producer = $state(props.existing?.beverage.producer_id ?? "");
+    let name = $state(props.existing?.beverage.name ?? "");
+    let rating = $state(props.existing?.beverage.rating ?? 10);
+    let description = $state(props.existing?.beverage.description ?? "");
+
+    let image: number[] | null = $state(props.existing?.beverage.image ?? null);
 
     const kindsQuery = useKindsQuery();
     const producersQuery = useProducersQuery();
     const beverageMutation = useBeverageMutation();
 
-    const submit = async () => {
-        const arrayBuffer = await image?.item(0)?.arrayBuffer();
-        const byteArray = arrayBuffer
-            ? Array.from(new Uint8Array(arrayBuffer))
-            : null;
+    const onImageChange = async (list: FileList | null) => {
+        const byteArray = await firstFileToByteArray(list);
+        image = byteArray;
+    }
 
+    const submit = () => {
         $beverageMutation.mutate({
-            name: name,
-            producer_id: Number(producer),
-            kind_id: Number(kind),
-            rating: rating,
-            description: description,
-            image: byteArray,
+            beverage_id: props.existing?.beverage_id ?? null,
+            beverage: {
+                name: name,
+                producer_id: Number(producer),
+                kind_id: Number(kind),
+                rating: rating,
+                description: description,
+                image: image,
+            },
         });
 
         props.close();
@@ -128,8 +135,9 @@
 
             <input
                 accept="image/png, image/jpeg"
-                bind:files={image}
+                onchange={(e) => { onImageChange(e.currentTarget.files) }}
                 type="file"
+                value="Test"
             />
 
             <div class="modal-action">

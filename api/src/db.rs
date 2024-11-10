@@ -63,10 +63,61 @@ impl Db {
     }
 
     pub async fn get_all_beverages(&self) -> anyhow::Result<Vec<JoinBeverage>> {
-        let record = sqlx::query_as!(JoinBeverage, "SELECT beverage.name as name, kind.name as kind, producer.name as producer, rating, description, image FROM beverage INNER JOIN kind ON kind.kind_id = beverage.kind_id INNER JOIN producer ON producer.producer_id = beverage.producer_id;")
-            .fetch_all(&self.pool)
-            .await?;
-        Ok(record)
+        let record = sqlx::query!(
+            r#"SELECT beverage_id,
+                      beverage.name as name, 
+                      kind.name as kind, 
+                      producer.name as producer, 
+                      beverage.producer_id,
+                      beverage.kind_id,
+                      rating, 
+                      description, 
+                      image 
+               FROM beverage 
+               INNER JOIN kind ON kind.kind_id = beverage.kind_id 
+               INNER JOIN producer ON producer.producer_id = beverage.producer_id;"#
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(record
+            .into_iter()
+            .map(|r| JoinBeverage {
+                beverage_id: r.beverage_id as i32,
+                name: r.name,
+                producer_id: r.producer_id as i32,
+                producer: r.producer,
+                kind_id: r.kind_id as i32,
+                kind: r.kind,
+                rating: r.rating,
+                description: r.description,
+                image: r.image,
+            })
+            .collect())
+    }
+
+    pub async fn update_beverage(&self, beverage_id: i32, beverage: InsertBeverage) -> anyhow::Result<()> {
+        sqlx::query!(
+            r#"UPDATE beverage
+               SET name = ?,
+                   producer_id = ?,
+                   kind_id = ?,
+                   rating = ?,
+                   description = ?,
+                   image = ? 
+               WHERE beverage_id = ?;"#,
+               beverage.name,
+               beverage.producer_id,
+               beverage.kind_id,
+               beverage.rating,
+               beverage.description,
+               beverage.image,
+               beverage_id,
+        )
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
     }
 
     pub async fn delete_beverage(&self, beverage_id: i64) -> anyhow::Result<()> {
