@@ -1,3 +1,10 @@
+<script lang="ts">
+    import { nav } from "./routing.svelte";
+
+</script>
+
+<!-- svelte-ignore a11y_consider_explicit_label -->
+<!-- svelte-ignore a11y_missing_attribute -->
 <div class="navbar bg-base-100">
     <div class="navbar-start">
         <div class="dropdown">
@@ -17,17 +24,18 @@
                     />
                 </svg>
             </div>
+            <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
             <ul
                 tabindex="0"
                 class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
             >
-                <li><a>Home</a></li>
-                <li><a>Portfolio</a></li>
+                <li><a onclick={() => nav('/')}>Home</a></li>
+                <li><a onclick={() => nav('/settings')}>Settings</a></li>
             </ul>
         </div>
     </div>
     <div class="navbar-center">
-        <img src="/logo-transparent.png" class="h-12"/>
+        <img src="/logo-transparent.png" class="h-12" alt="logo" />
         <a class="btn btn-ghost text-xl">Ale Pal</a>
     </div>
     <div class="navbar-end">

@@ -8,8 +8,10 @@ export type Procedures = {
     mutations: 
         { key: "beverage", input: UpdateBeverageRequest, result: null } | 
         { key: "deleteBeverage", input: number, result: null } | 
-        { key: "kind", input: NameRequest, result: null } | 
-        { key: "producer", input: NameRequest, result: null },
+        { key: "deleteKind", input: number, result: null } | 
+        { key: "deleteProducer", input: number, result: null } | 
+        { key: "kind", input: NameRequest, result: number } | 
+        { key: "producer", input: NameRequest, result: number },
     subscriptions: never
 };
 

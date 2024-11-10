@@ -33,20 +33,20 @@ async fn get_all_beverages(
     ctx.db.get_all_beverages().await.anyhow_rspc()
 }
 
-async fn add_kind(ctx: Context, input: NameRequest) -> Result<(), rspc::Error> {
-    ctx.db.insert_kind(&input.name).await.anyhow_rspc()?;
-    Ok(())
+async fn add_kind(ctx: Context, input: NameRequest) -> Result<i32, rspc::Error> {
+    let id = ctx.db.insert_kind(&input.name).await.anyhow_rspc()?;
+    Ok(id as i32)
 }
 
-async fn add_producer(ctx: Context, input: NameRequest) -> Result<(), rspc::Error> {
+async fn add_producer(ctx: Context, input: NameRequest) -> Result<i32, rspc::Error> {
     if input.name.is_empty() {
         return Err(rspc::Error::new(
             ErrorCode::BadRequest,
             "Name is empty".to_owned(),
         ));
     }
-    ctx.db.insert_producer(&input.name).await.anyhow_rspc()?;
-    Ok(())
+    let id = ctx.db.insert_producer(&input.name).await.anyhow_rspc()?;
+    Ok(id as i32)
 }
 
 #[derive(Deserialize, Type)]
@@ -72,6 +72,16 @@ async fn delete_beverage(ctx: Context, input: i32) -> Result<(), rspc::Error> {
     Ok(())
 }
 
+async fn delete_kind(ctx: Context, input: i32) -> Result<(), rspc::Error> {
+    ctx.db.delete_kind(input as i64).await.anyhow_rspc()?;
+    Ok(())
+}
+
+async fn delete_producer(ctx: Context, input: i32) -> Result<(), rspc::Error> {
+    ctx.db.delete_producer(input as i64).await.anyhow_rspc()?;
+    Ok(())
+}
+
 struct Context {
     db: Db,
 }
@@ -85,6 +95,8 @@ fn router() -> rspc::Router<Context> {
         .mutation("producer", |t| t(add_producer))
         .mutation("beverage", |t| t(upsert_beverage))
         .mutation("deleteBeverage", |t| t(delete_beverage))
+        .mutation("deleteKind", |t| t(delete_kind))
+        .mutation("deleteProducer", |t| t(delete_producer))
         .build()
 }
 

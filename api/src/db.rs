@@ -126,4 +126,18 @@ impl Db {
             .await?;
         Ok(())
     }
+
+    pub async fn delete_kind(&self, kind_id: i64) -> anyhow::Result<()> {
+        sqlx::query!("DELETE FROM kind WHERE kind_id = ?", kind_id)
+            .execute(&self.pool)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn delete_producer(&self, producer_id: i64) -> anyhow::Result<()> {
+        sqlx::query!("DELETE FROM producer WHERE producer_id = ?", producer_id)
+            .execute(&self.pool)
+            .await?;
+        Ok(())
+    }
 }
