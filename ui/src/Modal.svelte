@@ -37,6 +37,16 @@
         image = byteArray;
     };
 
+    let fileUploadInputElement: HTMLInputElement | undefined = $state();
+
+    $effect(() => {
+        if (!fileUploadInputElement || !modalState.existing?.beverage.image) return;
+
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(new File([], 'existing_image.png'))
+        fileUploadInputElement.files = dataTransfer.files;
+    });
+
     const submit = () => {
         $beverageMutation.mutate({
             beverage_id: modalState.existing?.beverage_id ?? null,
@@ -208,7 +218,9 @@
             </div>
 
             <input
+                bind:this={fileUploadInputElement}
                 accept="image/png, image/jpeg"
+                class="file-input file-input-bordered w-full max-w-full"
                 onchange={(e) => {
                     onImageChange(e.currentTarget.files);
                 }}
