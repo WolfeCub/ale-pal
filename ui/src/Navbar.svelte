@@ -1,6 +1,24 @@
 <script lang="ts">
     import { nav } from "./routing.svelte";
+    import { searchState } from "./search.svelte";
 
+    let showSearch = $state(false);
+
+    let timer = $state(0);
+
+    const debounce = (value: string) => {
+        console.log('here', value);
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            searchState.query = value;
+        }, 500);
+    };
+
+    $effect(() => {
+        if (!showSearch) {
+            searchState.query = '';
+        }
+    })
 </script>
 
 <!-- svelte-ignore a11y_consider_explicit_label -->
@@ -29,17 +47,31 @@
                 tabindex="0"
                 class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
             >
-                <li><a onclick={() => nav('/')}>Home</a></li>
-                <li><a onclick={() => nav('/settings')}>Settings</a></li>
+                <li><a onclick={() => nav("/")}>Home</a></li>
+                <li><a onclick={() => nav("/settings")}>Settings</a></li>
             </ul>
         </div>
     </div>
-    <div class="navbar-center">
-        <img src="/logo-transparent.png" class="h-12" alt="logo" />
-        <a class="btn btn-ghost text-xl">Ale Pal</a>
-    </div>
+    {#if !showSearch}
+        <div class="navbar-center">
+            <img src="/logo-transparent.png" class="h-12" alt="logo" />
+            <a class="btn btn-ghost text-xl">Ale Pal</a>
+        </div>
+    {:else}
+        <input
+            onkeyup={(e) => debounce(e.currentTarget.value)}
+            type="text"
+            placeholder="Search..."
+            class="input input-bordered w-full max-w-xs"
+        />
+    {/if}
     <div class="navbar-end">
-        <button class="btn btn-ghost btn-circle">
+        <button
+            class="btn btn-ghost btn-circle"
+            onclick={() => {
+                showSearch = !showSearch;
+            }}
+        >
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 class="h-5 w-5"

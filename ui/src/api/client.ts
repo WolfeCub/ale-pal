@@ -1,7 +1,7 @@
 import { createMutation, createQuery, QueryClient } from '@tanstack/svelte-query';
 
 import { createClient, FetchTransport } from "@rspc/client";
-import type { InsertBeverage, JoinBeverage, Kind, NameRequest, Procedures, Producer, UpdateBeverageRequest } from "./rspc";
+import type { JoinBeverage, Kind, NameRequest, Procedures, Producer, SearchBeveragesRequest, UpdateBeverageRequest } from "./rspc";
 import { toastState } from '../toast.svelte';
 
 const url = import.meta.env.MODE == 'production' ? '/rspc' : 'http://localhost:8080/rspc';
@@ -18,7 +18,6 @@ export const queryClient = new QueryClient({
     },
 });
 
-
 const kindQueryKey = ['kinds'];
 export const getKindsQuery = () => createQuery<Kind[]>({
     queryKey: kindQueryKey,
@@ -32,9 +31,9 @@ export const getProducersQuery = () => createQuery<Producer[]>({
 });
 
 const beverageQueryKey = ['beverage'];
-export const getBeveragesQuery = () => createQuery<JoinBeverage[]>({
-    queryKey: beverageQueryKey,
-    queryFn: () => client.query(['beverage']),
+export const getBeveragesQuery = (search?: SearchBeveragesRequest) => createQuery<JoinBeverage[]>({
+    queryKey: [...beverageQueryKey, search],
+    queryFn: () => client.query(['beverage', search ?? { query: '' }]),
 });
 
 export const upsertBeverageMutation = () => createMutation({

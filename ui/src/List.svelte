@@ -2,8 +2,9 @@
     import { getBeveragesQuery } from "./api/client";
     import { byteArrayToBlob } from "./utils";
     import { modalState } from "./modal.svelte";
+    import { searchState } from "./search.svelte";
 
-    const beveragesQuery = getBeveragesQuery();
+    const beveragesQuery = $derived(getBeveragesQuery({ query: searchState.query }));
 </script>
 
 {#if $beveragesQuery.isSuccess}

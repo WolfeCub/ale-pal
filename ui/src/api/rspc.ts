@@ -2,7 +2,7 @@
 
 export type Procedures = {
     queries: 
-        { key: "beverage", input: never, result: JoinBeverage[] } | 
+        { key: "beverage", input: SearchBeveragesRequest, result: JoinBeverage[] } | 
         { key: "kind", input: never, result: Kind[] } | 
         { key: "producer", input: never, result: Producer[] },
     mutations: 
@@ -14,6 +14,8 @@ export type Procedures = {
         { key: "producer", input: NameRequest, result: number },
     subscriptions: never
 };
+
+export type SearchBeveragesRequest = { query: string }
 
 export type NameRequest = { name: string }
 

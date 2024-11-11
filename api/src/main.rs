@@ -26,11 +26,20 @@ async fn get_all_producers(ctx: Context, _input: ()) -> Result<Vec<types::Produc
     ctx.db.get_all_producers().await.anyhow_rspc()
 }
 
+#[derive(Deserialize, Type)]
+struct SearchBeveragesRequest {
+    query: String,
+}
+
 async fn get_all_beverages(
     ctx: Context,
-    _input: (),
+    input: SearchBeveragesRequest,
 ) -> Result<Vec<types::JoinBeverage>, rspc::Error> {
-    ctx.db.get_all_beverages().await.anyhow_rspc()
+    if input.query.is_empty() {
+        ctx.db.get_all_beverages().await.anyhow_rspc()
+    } else {
+        ctx.db.search_beverages(input.query).await.anyhow_rspc()
+    }
 }
 
 async fn add_kind(ctx: Context, input: NameRequest) -> Result<i32, rspc::Error> {
