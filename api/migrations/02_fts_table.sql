@@ -4,7 +4,8 @@ CREATE VIRTUAL TABLE beverage_search USING FTS5(
     kind,
     producer,
     rating,
-    description
+    description,
+    tokenize="trigram"
 );
 
 CREATE TRIGGER beverage_search_before_update

@@ -7,7 +7,6 @@
     let timer = $state(0);
 
     const debounce = (value: string) => {
-        console.log('here', value);
         clearTimeout(timer);
         timer = setTimeout(() => {
             searchState.query = value;
