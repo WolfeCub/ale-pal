@@ -2,6 +2,7 @@ import { createMutation, createQuery, QueryClient } from '@tanstack/svelte-query
 
 import { createClient, FetchTransport } from "@rspc/client";
 import type { InsertBeverage, JoinBeverage, Kind, NameRequest, Procedures, Producer, UpdateBeverageRequest } from "./rspc";
+import { toastState } from '../toast.svelte';
 
 const url = import.meta.env.MODE == 'production' ? '/rspc' : 'http://localhost:8080/rspc';
 
@@ -39,6 +40,7 @@ export const getBeveragesQuery = () => createQuery<JoinBeverage[]>({
 export const upsertBeverageMutation = () => createMutation({
     mutationFn: (updateRequest: UpdateBeverageRequest) => client.mutation(['beverage', updateRequest]),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: beverageQueryKey }), // TODO: Set the data rather than refetching
+    onError: () => toastState.open('Unable to save beverage'),
 });
 
 export const insertKindMutation = () => createMutation({
@@ -46,6 +48,7 @@ export const insertKindMutation = () => createMutation({
     onSuccess: (kindId, nameRequest) => {
         queryClient.setQueryData(kindQueryKey, (oldData: Kind[]): Kind[] => [...oldData, { kind_id: kindId, name: nameRequest.name }])
     },
+    onError: () => toastState.open('Unable to add kind'),
 });
 
 export const insertProducerMutation = () => createMutation({
@@ -53,6 +56,7 @@ export const insertProducerMutation = () => createMutation({
     onSuccess: (producerId, nameRequest) => {
         queryClient.setQueryData(producerQueryKey, (oldData: Producer[]): Producer[] => [...oldData, { producer_id: producerId, name: nameRequest.name }])
     },
+    onError: () => toastState.open('Unable to add producer'),
 });
 
 export const deleteKindMutation = () => createMutation({
@@ -60,6 +64,7 @@ export const deleteKindMutation = () => createMutation({
     onSuccess: (_, kindId) => {
         queryClient.setQueryData(kindQueryKey, (oldData: Kind[]): Kind[] => oldData.filter(k => k.kind_id != kindId))
     },
+    onError: () => toastState.open('Unable to delete kind'),
 });
 
 export const deleteProducerMutation = () => createMutation({
@@ -67,6 +72,7 @@ export const deleteProducerMutation = () => createMutation({
     onSuccess: (_, producerId) => {
         queryClient.setQueryData(producerQueryKey, (oldData: Producer[]): Producer[] => oldData.filter(k => k.producer_id != producerId))
     },
+    onError: () => toastState.open('Unable to delete producer'),
 });
 
 export const deleteBeverageMutation = () => createMutation({
@@ -74,5 +80,6 @@ export const deleteBeverageMutation = () => createMutation({
     onSuccess: (_, beverageId) => {
         queryClient.setQueryData(beverageQueryKey, (oldData: JoinBeverage[]): JoinBeverage[] => oldData.filter(k => k.beverage_id != beverageId))
     },
+    onError: () => toastState.open('Unable to delete beverage'),
 });
 

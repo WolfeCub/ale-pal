@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { preventDefault } from "svelte/legacy";
     import {
         deleteBeverageMutation,
         getKindsQuery,
@@ -8,28 +7,23 @@
         insertProducerMutation,
         upsertBeverageMutation,
     } from "./api/client";
-    import type { UpdateBeverageRequest } from "./api/rspc";
     import { firstFileToByteArray } from "./utils";
+    import { modalState } from "./modal.svelte";
 
-    interface Props {
-        close: () => void;
-        existing: UpdateBeverageRequest | null;
-    }
-
-    let props: Props = $props();
-
-    let kind = $state(props.existing?.beverage.kind_id ?? "");
-    let producer = $state(props.existing?.beverage.producer_id ?? "");
-    let name = $state(props.existing?.beverage.name ?? "");
-    let rating = $state(props.existing?.beverage.rating ?? 10);
-    let description = $state(props.existing?.beverage.description ?? "");
+    let kind = $state(modalState.existing?.beverage.kind_id ?? "");
+    let producer = $state(modalState.existing?.beverage.producer_id ?? "");
+    let name = $state(modalState.existing?.beverage.name ?? "");
+    let rating = $state(modalState.existing?.beverage.rating ?? 10);
+    let description = $state(modalState.existing?.beverage.description ?? "");
 
     let newKind = $state("");
     let showNewKind = $state(false);
     let newProducer = $state("");
     let showNewProducer = $state(false);
 
-    let image: number[] | null = $state(props.existing?.beverage.image ?? null);
+    let image: number[] | null = $state(
+        modalState.existing?.beverage.image ?? null,
+    );
 
     const kindsQuery = getKindsQuery();
     const producersQuery = getProducersQuery();
@@ -45,7 +39,7 @@
 
     const submit = () => {
         $beverageMutation.mutate({
-            beverage_id: props.existing?.beverage_id ?? null,
+            beverage_id: modalState.existing?.beverage_id ?? null,
             beverage: {
                 name: name,
                 producer_id: Number(producer),
@@ -56,29 +50,29 @@
             },
         });
 
-        props.close();
+        modalState.close();
     };
 
     const newKindEvent = (e: MouseEvent) => {
         e.preventDefault();
 
-        if (showNewKind && newKind != '') {
+        if (showNewKind && newKind != "") {
             $kindMutation.mutate({ name: newKind });
         }
 
         showNewKind = !showNewKind;
-        newKind = '';
+        newKind = "";
     };
 
     const newProducerEvent = (e: MouseEvent) => {
         e.preventDefault();
 
-        if (showNewProducer && newProducer != '') {
+        if (showNewProducer && newProducer != "") {
             $producerMutation.mutate({ name: newProducer });
         }
 
         showNewProducer = !showNewProducer;
-        newProducer = '';
+        newProducer = "";
     };
 </script>
 
@@ -87,7 +81,7 @@
         <form method="dialog">
             <button
                 class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-                onclick={props.close}>✕</button
+                onclick={() => modalState.close()}>✕</button
             >
         </form>
 
@@ -137,11 +131,12 @@
                             required
                         />
                     {/if}
-                    <button
-                        class="btn"
-                        onclick={newKindEvent}
-                    >
-                        {showNewKind ? (newKind != '' ? "Add" : "Select") : "Edit"}
+                    <button class="btn" onclick={newKindEvent}>
+                        {showNewKind
+                            ? newKind != ""
+                                ? "Add"
+                                : "Select"
+                            : "Edit"}
                     </button>
                 </div>
             </div>
@@ -175,11 +170,12 @@
                             required
                         />
                     {/if}
-                    <button
-                        class="btn"
-                        onclick={newProducerEvent}
-                    >
-                        {showNewProducer ? (newProducer != '' ? "Add" : "Select") : "Edit"}
+                    <button class="btn" onclick={newProducerEvent}>
+                        {showNewProducer
+                            ? newProducer != ""
+                                ? "Add"
+                                : "Select"
+                            : "Edit"}
                     </button>
                 </div>
             </div>
@@ -224,9 +220,13 @@
                 <button
                     class="btn btn-error"
                     onclick={() => {
-                        props.existing?.beverage_id &&
-                            $deleteMutation.mutate(props.existing.beverage_id);
-                    }}>Delete</button
+                        modalState.existing?.beverage_id &&
+                            $deleteMutation.mutate(
+                                modalState.existing.beverage_id,
+                            );
+                    }}
+                    disabled={!modalState.existing}
+                    >Delete</button
                 >
                 <button type="submit" class="btn btn-primary">Save</button>
             </div>
