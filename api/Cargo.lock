@@ -46,6 +46,7 @@ dependencies = [
  "rspc",
  "rspc-axum",
  "serde",
+ "serde_json",
  "specta",
  "sqlx",
  "tokio",

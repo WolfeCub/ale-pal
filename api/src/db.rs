@@ -1,6 +1,6 @@
-use std::i64;
+use std::{i64, ops::Deref};
 
-use sqlx::SqlitePool;
+use sqlx::{Execute, SqlitePool};
 
 use crate::types::*;
 
@@ -67,16 +67,16 @@ impl Db {
     pub async fn get_all_beverages(&self) -> anyhow::Result<Vec<JoinBeverage>> {
         let record = sqlx::query!(
             r#"SELECT beverage_id,
-                      beverage.name as name, 
-                      kind.name as kind, 
-                      producer.name as producer, 
+                      beverage.name as name,
+                      kind.name as kind,
+                      producer.name as producer,
                       beverage.producer_id,
                       beverage.kind_id,
-                      rating, 
-                      description, 
-                      image 
-               FROM beverage 
-               INNER JOIN kind ON kind.kind_id = beverage.kind_id 
+                      rating,
+                      description,
+                      image
+               FROM beverage
+               INNER JOIN kind ON kind.kind_id = beverage.kind_id
                INNER JOIN producer ON producer.producer_id = beverage.producer_id;"#
         )
         .fetch_all(&self.pool)
@@ -110,7 +110,7 @@ impl Db {
                    kind_id = ?,
                    rating = ?,
                    description = ?,
-                   image = ? 
+                   image = ?
                WHERE beverage_id = ?;"#,
             beverage.name,
             beverage.producer_id,
@@ -149,40 +149,38 @@ impl Db {
 
     pub async fn search_beverages(
         &self,
-        search_term: String,
+        search_request: SearchBeveragesRequest,
     ) -> anyhow::Result<Vec<JoinBeverage>> {
-        let record = sqlx::query!(
-            r#"SELECT beverage_id,
-                      beverage.name as name, 
-                      kind.name as kind, 
-                      producer.name as producer, 
+        let mut query_string = r#"SELECT beverage_id,
+                      beverage.name as name,
+                      kind.name as kind,
+                      producer.name as producer,
                       beverage.producer_id,
                       beverage.kind_id,
-                      rating, 
-                      description, 
-                      image 
-               FROM beverage 
-               INNER JOIN kind ON kind.kind_id = beverage.kind_id 
+                      rating,
+                      description,
+                      image
+               FROM beverage
+               INNER JOIN kind ON kind.kind_id = beverage.kind_id
                INNER JOIN producer ON producer.producer_id = beverage.producer_id
-               WHERE beverage_id IN (SELECT beverage_id FROM beverage_search WHERE beverage_search MATCH ?)"#,
-            search_term
-        )
-        .fetch_all(&self.pool)
-        .await?;
+               "#
+        .to_owned();
 
-        Ok(record
-            .into_iter()
-            .map(|r| JoinBeverage {
-                beverage_id: r.beverage_id as i32,
-                name: r.name,
-                producer_id: r.producer_id as i32,
-                producer: r.producer,
-                kind_id: r.kind_id as i32,
-                kind: r.kind,
-                rating: r.rating,
-                description: r.description,
-                image: r.image,
-            })
-            .collect())
+        if !search_request.query.is_empty() {
+            query_string += "WHERE beverage_id IN (SELECT beverage_id FROM beverage_search WHERE beverage_search MATCH ?)"
+        }
+
+        query_string += &format!(
+            "ORDER BY {} {}",
+            search_request.sort.column.to_string(),
+            search_request.sort.direction.to_string()
+        );
+
+        let record: Vec<JoinBeverage> = sqlx::query_as(&query_string)
+            .bind(search_request.query)
+            .fetch_all(&self.pool)
+            .await?;
+
+        Ok(record)
     }
 }

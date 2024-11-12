@@ -4,7 +4,7 @@
     import { modalState } from "./modal.svelte";
     import { searchState } from "./search.svelte";
 
-    const beveragesQuery = $derived(getBeveragesQuery({ query: searchState.query }));
+    const beveragesQuery = $derived(getBeveragesQuery(searchState.value));
 </script>
 
 {#if $beveragesQuery.isSuccess}

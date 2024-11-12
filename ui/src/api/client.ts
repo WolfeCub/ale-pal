@@ -33,7 +33,7 @@ export const getProducersQuery = () => createQuery<Producer[]>({
 const beverageQueryKey = ['beverage'];
 export const getBeveragesQuery = (search?: SearchBeveragesRequest) => createQuery<JoinBeverage[]>({
     queryKey: [...beverageQueryKey, search],
-    queryFn: () => client.query(['beverage', search ?? { query: '' }]),
+    queryFn: () => client.query(['beverage', search ?? { query: '', sort: null }]),
 });
 
 export const upsertBeverageMutation = () => createMutation({

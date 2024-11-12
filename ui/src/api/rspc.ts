@@ -15,16 +15,22 @@ export type Procedures = {
     subscriptions: never
 };
 
-export type Kind = { kind_id: number; name: string }
+export type SearchBeveragesRequest = { query: string; sort: SortOptions }
 
-export type JoinBeverage = { beverage_id: number; name: string; producer_id: number; producer: string; kind_id: number; kind: string; rating: number; description: string; image: number[] | null }
-
-export type NameRequest = { name: string }
-
-export type UpdateBeverageRequest = { beverage_id: number | null; beverage: InsertBeverage }
+export type SortDir = "asc" | "desc"
 
 export type InsertBeverage = { name: string; producer_id: number; kind_id: number; rating: number; description: string; image: number[] | null }
 
+export type Kind = { kind_id: number; name: string }
+
+export type SortOptions = { column: SortColumn; direction: SortDir }
+
 export type Producer = { producer_id: number; name: string }
 
-export type SearchBeveragesRequest = { query: string }
+export type JoinBeverage = { beverage_id: number; name: string; producer_id: number; producer: string; kind_id: number; kind: string; rating: number; description: string; image: number[] | null }
+
+export type SortColumn = "beverage_id" | "rating" | "name" | "kind"
+
+export type UpdateBeverageRequest = { beverage_id: number | null; beverage: InsertBeverage }
+
+export type NameRequest = { name: string }

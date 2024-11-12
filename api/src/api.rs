@@ -5,6 +5,7 @@ use specta::Type;
 use crate::db::*;
 use crate::types;
 use crate::types::InsertBeverage;
+use crate::types::SearchBeveragesRequest;
 use crate::util::*;
 
 #[derive(Deserialize, Type)]
@@ -23,20 +24,11 @@ async fn get_all_producers(
     ctx.db.get_all_producers().await.anyhow_rspc()
 }
 
-#[derive(Deserialize, Type)]
-struct SearchBeveragesRequest {
-    query: String,
-}
-
 async fn get_all_beverages(
     ctx: RspcContext,
     input: SearchBeveragesRequest,
 ) -> Result<Vec<types::JoinBeverage>, rspc::Error> {
-    if input.query.is_empty() {
-        ctx.db.get_all_beverages().await.anyhow_rspc()
-    } else {
-        ctx.db.search_beverages(input.query).await.anyhow_rspc()
-    }
+    ctx.db.search_beverages(input).await.anyhow_rspc()
 }
 
 async fn add_kind(ctx: RspcContext, input: NameRequest) -> Result<i32, rspc::Error> {
