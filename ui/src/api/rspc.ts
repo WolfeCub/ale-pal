@@ -15,16 +15,16 @@ export type Procedures = {
     subscriptions: never
 };
 
-export type SearchBeveragesRequest = { query: string }
-
-export type NameRequest = { name: string }
-
 export type Kind = { kind_id: number; name: string }
 
 export type JoinBeverage = { beverage_id: number; name: string; producer_id: number; producer: string; kind_id: number; kind: string; rating: number; description: string; image: number[] | null }
+
+export type NameRequest = { name: string }
 
 export type UpdateBeverageRequest = { beverage_id: number | null; beverage: InsertBeverage }
 
 export type InsertBeverage = { name: string; producer_id: number; kind_id: number; rating: number; description: string; image: number[] | null }
 
 export type Producer = { producer_id: number; name: string }
+
+export type SearchBeveragesRequest = { query: string }

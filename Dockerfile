@@ -3,7 +3,7 @@ WORKDIR /api
 COPY api .
 ENV DATABASE_URL=sqlite://alepal.db
 RUN cargo install sqlx-cli
-RUN sqlx database create
+RUN sqlx db create
 RUN sqlx migrate run
 RUN cargo build --release
 RUN strip target/release/ale-pal
@@ -20,9 +20,9 @@ RUN pnpm run build
 FROM gcr.io/distroless/cc-debian12:latest AS release
 WORKDIR /app
 COPY --from=rbuilder /api/target/release/ale-pal .
-COPY --from=rbuilder /api/alepal.db .
 COPY --from=jbuilder /ui/dist/ dist/
 
 EXPOSE 8080
+ENV DATABASE_URL=sqlite:///db/alepal.db
 
-CMD ["./ale-pal"]
+CMD ["./ale-pal", "--tracing-level", "INFO", "--run-migrations"]
