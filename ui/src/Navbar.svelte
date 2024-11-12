@@ -77,7 +77,7 @@
     {#if !showSearch}
         <div class="navbar-center">
             <img src="/logo-transparent.png" class="h-12" alt="logo" />
-            <a class="btn btn-ghost text-xl">Ale Pal</a>
+            <a class="btn btn-ghost text-xl" onclick={() => nav("/")}>Ale Pal</a>
         </div>
     {:else}
         <input
