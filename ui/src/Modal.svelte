@@ -67,7 +67,11 @@
         e.preventDefault();
 
         if (showNewKind && newKind != "") {
-            $kindMutation.mutate({ name: newKind });
+            $kindMutation.mutate({ name: newKind }, {
+                onSuccess: (kindId) => {
+                    kind = kindId;
+                },
+            });
         }
 
         showNewKind = !showNewKind;
@@ -78,7 +82,11 @@
         e.preventDefault();
 
         if (showNewProducer && newProducer != "") {
-            $producerMutation.mutate({ name: newProducer });
+            $producerMutation.mutate({ name: newProducer }, {
+                onSuccess: (producerId) => {
+                    producer = producerId;
+                },
+            });
         }
 
         showNewProducer = !showNewProducer;
