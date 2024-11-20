@@ -231,9 +231,11 @@
                 />
             </div>
 
+            <!-- Accept a random other file type so chrome android shows the file picker as an option.
+                 There's definitely a more elegant solution for this in the future. -->
             <input
                 bind:this={fileUploadInputElement}
-                accept="image/png, image/jpeg"
+                accept="image/png, image/jpeg, android/camera-workaround"
                 class="file-input file-input-bordered w-full max-w-full"
                 onchange={(e) => {
                     onImageChange(e.currentTarget.files);
