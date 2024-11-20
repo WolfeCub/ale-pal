@@ -13,8 +13,8 @@
     let kind = $state(modalState.existing?.beverage.kind_id ?? "");
     let producer = $state(modalState.existing?.beverage.producer_id ?? "");
     let name = $state(modalState.existing?.beverage.name ?? "");
-    let rating = $state(modalState.existing?.beverage.rating ?? 10);
     let description = $state(modalState.existing?.beverage.description ?? "");
+    let rating = $state(modalState.existing?.beverage.rating ?? 5);
 
     let newKind = $state("");
     let showNewKind = $state(false);
@@ -40,10 +40,11 @@
     let fileUploadInputElement: HTMLInputElement | undefined = $state();
 
     $effect(() => {
-        if (!fileUploadInputElement || !modalState.existing?.beverage.image) return;
+        if (!fileUploadInputElement || !modalState.existing?.beverage.image)
+            return;
 
         const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(new File([], 'existing_image.png'))
+        dataTransfer.items.add(new File([], "existing_image.png"));
         fileUploadInputElement.files = dataTransfer.files;
     });
 
@@ -67,11 +68,14 @@
         e.preventDefault();
 
         if (showNewKind && newKind != "") {
-            $kindMutation.mutate({ name: newKind }, {
-                onSuccess: (kindId) => {
-                    kind = kindId;
+            $kindMutation.mutate(
+                { name: newKind },
+                {
+                    onSuccess: (kindId) => {
+                        kind = kindId;
+                    },
                 },
-            });
+            );
         }
 
         showNewKind = !showNewKind;
@@ -82,11 +86,14 @@
         e.preventDefault();
 
         if (showNewProducer && newProducer != "") {
-            $producerMutation.mutate({ name: newProducer }, {
-                onSuccess: (producerId) => {
-                    producer = producerId;
+            $producerMutation.mutate(
+                { name: newProducer },
+                {
+                    onSuccess: (producerId) => {
+                        producer = producerId;
+                    },
                 },
-            });
+            );
         }
 
         showNewProducer = !showNewProducer;
@@ -206,7 +213,6 @@
                     class="textarea textarea-bordered w-full"
                     placeholder="Write a description"
                     rows="3"
-                    required
                 ></textarea>
             </div>
 
@@ -233,7 +239,7 @@
                     onImageChange(e.currentTarget.files);
                 }}
                 type="file"
-                value="Test"
+                capture
             />
 
             <div class="modal-action flex justify-between w-full">
@@ -245,8 +251,7 @@
                                 modalState.existing.beverage_id,
                             );
                     }}
-                    disabled={!modalState.existing}
-                    >Delete</button
+                    disabled={!modalState.existing}>Delete</button
                 >
                 <button type="submit" class="btn btn-primary">Save</button>
             </div>
